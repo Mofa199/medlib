@@ -59,6 +59,7 @@ const renderHeader = () => `
         <nav>
             <a href="#/" class="text-gray-600 hover:text-blue-600 px-3">Home</a>
             <a href="#/courses" class="text-gray-600 hover:text-blue-600 px-3">Courses</a>
+            <a href="#/pharmacology" class="text-gray-600 hover:text-blue-600 px-3">Pharmacology</a>
             <a href="#/about" class="text-gray-600 hover:text-blue-600 px-3">About</a>
             <a href="#/contact" class="text-gray-600 hover:text-blue-600 px-3">Contact</a>
             <a href="#/login" id="login-logout-link" class="text-gray-600 hover:text-blue-600 px-3 border-l-2 ml-3 pl-6">Login</a>
@@ -103,6 +104,7 @@ const renderCoursesPage = () => `<div class="p-8"><h2 class="text-3xl font-bold 
 const renderModuleListPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Modules</h2><div id="content-area"></div></div>`;
 const renderTopicListPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Topics</h2><div id="content-area"></div></div>`;
 const renderTopicDetailPage = () => `<div class="p-8"><div id="content-area"></div></div>`;
+const renderPharmacologyPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Pharmacology</h2><div id="content-area"></div></div>`;
 const renderAboutPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">About Us</h2>...</div>`;
 const renderContactPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Contact Us</h2>...</div>`;
 const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">404 - Page Not Found</h2>`;
@@ -110,6 +112,43 @@ const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">4
 // =================================================================================
 // 4. ROUTER AND DATA FETCHING LOGIC
 // =================================================================================
+
+const PHARMACOLOGY_DATA = [
+    {
+        category: 'Analgesics',
+        drugs: ['Aspirin', 'Ibuprofen', 'Paracetamol', 'Morphine']
+    },
+    {
+        category: 'Antibiotics',
+        drugs: ['Penicillin', 'Amoxicillin', 'Ciprofloxacin', 'Doxycycline']
+    },
+    {
+        category: 'Antihypertensives',
+        drugs: ['Lisinopril', 'Amlodipine', 'Metoprolol', 'Losartan']
+    }
+];
+
+const displayPharmacologyData = () => {
+    const contentArea = document.getElementById('content-area');
+    contentArea.innerHTML = PHARMACOLOGY_DATA.map((cat, index) => `
+        <div class="mb-4 border rounded-lg">
+            <button class="w-full text-left p-4 bg-gray-100 hover:bg-gray-200 font-bold" onclick="toggleAccordion(${index})">
+                ${cat.category}
+            </button>
+            <div id="accordion-${index}" class="hidden p-4">
+                <ul class="list-disc list-inside">
+                    ${cat.drugs.map(drug => `<li><a href="#/drugs/${encodeURIComponent(drug)}" class="text-blue-600 hover:underline">${drug}</a></li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `).join('');
+};
+
+const toggleAccordion = (index) => {
+    const content = document.getElementById(`accordion-${index}`);
+    content.classList.toggle('hidden');
+};
+
 const fetchAndDisplayCourses = async () => {
     const courses = await fetchWithAuth(`${API_URL}/admin/courses`);
     document.getElementById('content-area').innerHTML = courses.map(course => `
@@ -148,6 +187,8 @@ const routes = [
     { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (params) => fetchAndDisplayModules(params[0]) },
     { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (params) => fetchAndDisplayTopics(params[0]) },
     { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (params) => fetchAndDisplayTopicDetails(params[0]) },
+    { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: () => displayPharmacologyData() },
+    { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage },
     { path: /^\/about$/, view: renderAboutPage },
     { path: /^\/contact$/, view: renderContactPage },
 ];
