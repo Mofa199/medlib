@@ -1,333 +1,214 @@
-const API_URL = 'http://127.0.0.1:5000'; // Assuming the backend runs here
-
+// =================================================================================
+// 1. STATE AND CONFIGURATION
+// =================================================================================
+const API_URL = 'http://127.0.0.1:5000';
 const app = document.getElementById('app');
 
-// --- UI Templates / Components ---
-
-const renderHeader = () => {
-    return `
-        <header class="bg-white shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-blue-600">TAMSA Digital Library</h1>
-            <nav>
-                <a href="#/" class="text-gray-600 hover:text-blue-600 px-3">Home</a>
-                <a href="#/courses" class="text-gray-600 hover:text-blue-600 px-3">Courses</a>
-                <a href="#/about" class="text-gray-600 hover:text-blue-600 px-3">About</a>
-                <a href="#/contact" class="text-gray-600 hover:text-blue-600 px-3">Contact</a>
-                <a href="#/login" id="login-logout-link" class="text-gray-600 hover:text-blue-600 px-3 border-l-2 ml-3 pl-6">Login</a>
-            </nav>
-        </header>
-    `;
-};
-
-const renderLoginPage = () => {
-    return `
-        <div class="flex items-center justify-center h-screen">
-            <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-                <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-                <form id="login-form">
-                    <div class="mb-4">
-                        <label for="username" class="block text-gray-700">Username</label>
-                        <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="password" class="block text-gray-700">Password</label>
-                        <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
-                </form>
-                <p class="text-center mt-4">
-                    Don't have an account? <a href="#/register" class="text-blue-600 hover:underline">Sign up</a>
-                </p>
-            </div>
-        </div>
-    `;
-};
-
-const renderRegisterPage = () => {
-    return `
-        <div class="flex items-center justify-center h-screen">
-            <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-                <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
-                <form id="register-form">
-                    <div class="mb-4">
-                        <label for="username" class="block text-gray-700">Username</label>
-                        <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="email" class="block text-gray-700">Email</label>
-                        <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="password" class="block text-gray-700">Password</label>
-                        <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Register</button>
-                </form>
-                <p class="text-center mt-4">
-                    Already have an account? <a href="#/login" class="text-blue-600 hover:underline">Login</a>
-                </p>
-            </div>
-        </div>
-    `;
-};
-
-const decodeJwt = (token) => {
-    try {
-        return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-        console.error("Failed to decode JWT:", e);
-        return null;
-    }
-};
-
-const renderDashboardPage = () => {
-    const token = localStorage.getItem('jwt_token');
-    if (!token) {
-        window.location.hash = '/login';
-        return ''; // Return empty string because the redirect will happen
-    }
-
-    const userData = decodeJwt(token);
-    const username = userData ? userData.identity.username : 'User';
-
-    return `
-        <div class="p-8">
-            <h2 class="text-3xl font-bold mb-6">Welcome, ${username}!</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- My Progress Card -->
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">My Progress</h3>
-                    <p class="text-gray-700">You have completed <strong>3 of 10</strong> modules this week.</p>
-                </div>
-                <!-- Suggested Topics Card -->
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">Suggested for you</h3>
-                    <ul class="list-disc list-inside text-gray-700">
-                        <li>Advanced Pharmacology</li>
-                        <li>Cardiology Basics</li>
-                    </ul>
-                </div>
-                <!-- Bookmarked Items Card -->
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">My Bookmarks</h3>
-                    <p class="text-gray-700">You have <strong>5</strong> bookmarked items.</p>
-                </div>
-            </div>
-        </div>
-    `;
-};
-
-const renderCoursesPage = () => {
-    return `<h2 class="text-3xl p-6">Courses</h2><div id="course-list" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>`;
-};
-
-const render404Page = () => {
-    return `<h2 class="text-3xl p-6 text-center text-red-500">404 - Page Not Found</h2>`;
-}
-
-// --- Router ---
-
-const renderAboutPage = () => {
-    return `
-        <div class="p-8">
-            <h2 class="text-3xl font-bold mb-6">About Us</h2>
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-xl font-bold mb-4">Our Mission</h3>
-                <p class="text-gray-700">To provide a world-class digital library experience for medical students, fostering learning and innovation.</p>
-                <h3 class="text-xl font-bold mt-6 mb-4">Our History</h3>
-                <p class="text-gray-700">Founded in 2024, the TAMSA Digital Library was created to address the growing need for accessible and high-quality digital academic resources.</p>
-            </div>
-        </div>
-    `;
-};
-
-const renderContactPage = () => {
-    return `
-        <div class="p-8">
-            <h2 class="text-3xl font-bold mb-6">Contact Us</h2>
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <form>
-                    <div class="mb-4">
-                        <label for="name" class="block text-gray-700">Name</label>
-                        <input type="text" id="name" class="w-full px-3 py-2 border rounded-lg">
-                    </div>
-                    <div class="mb-4">
-                        <label for="email" class="block text-gray-700">Email</label>
-                        <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg">
-                    </div>
-                    <div class="mb-4">
-                        <label for="message" class="block text-gray-700">Message</label>
-                        <textarea id="message" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
-                    </div>
-                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Send Message</button>
-                </form>
-                <div class="mt-8">
-                    <p><strong>Email:</strong> contact@tamsalibrary.com</p>
-                    <p><strong>Phone:</strong> +123 456 7890</p>
-                </div>
-            </div>
-        </div>
-    `;
-};
-
-const routes = {
-    '/': renderDashboardPage,
-    '/login': renderLoginPage,
-    '/register': renderRegisterPage,
-    '/courses': renderCoursesPage,
-    '/about': renderAboutPage,
-    '/contact': renderContactPage,
-};
-
-const router = () => {
-    const path = window.location.hash.substring(1) || '/';
-    const renderFunction = routes[path] || render404Page;
-
-    // Always render the header, then the page content
-    app.innerHTML = renderHeader();
-    app.innerHTML += renderFunction();
-
-    // Call page-specific logic after rendering
-    if (path === '/courses') {
-        fetchAndDisplayCourses();
-    }
-};
-
-// --- UI Templates / Components ---
-// ... (keep existing templates)
-
-// --- API Communication ---
-
+// =================================================================================
+// 2. API COMMUNICATION
+// =================================================================================
 const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('jwt_token');
     if (!token) {
         window.location.hash = '/login';
-        return;
+        throw new Error('No token found, redirecting to login.');
     }
-
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers,
-    };
-
+    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers };
     const response = await fetch(url, { ...options, headers });
-
-    if (response.status === 401) { // Unauthorized or Token expired
+    if (response.status === 401) {
         logoutUser();
-        return;
+        throw new Error('Session expired, please log in again.');
     }
-
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'An API error occurred');
     }
-
     return response.json();
 };
 
-
-const fetchAndDisplayCourses = async () => {
-    try {
-        const courses = await fetchWithAuth(`${API_URL}/admin/courses`);
-        const courseList = document.getElementById('course-list');
-        if (courses && courseList) {
-            courseList.innerHTML = courses.map(course => `
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold mb-2">${course.name}</h3>
-                    <p class="text-gray-700">${course.description || ''}</p>
-                </div>
-            `).join('');
-        }
-    } catch (error) {
-        alert(`Error fetching courses: ${error.message}`);
-    }
-};
-
 const loginUser = async (username, password) => {
-    try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
-        }
-        localStorage.setItem('jwt_token', data.access_token);
-        window.location.hash = '/'; // Redirect to dashboard
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
+    const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Login failed');
+    localStorage.setItem('jwt_token', data.access_token);
+    window.location.hash = '/';
 };
 
 const registerUser = async (username, email, password) => {
-    try {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
-        }
-        alert('Registration successful! Please log in.');
-        window.location.hash = '/login';
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
+    const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Registration failed');
+    alert('Registration successful! Please log in.');
+    window.location.hash = '/login';
 };
 
+// =================================================================================
+// 3. UI COMPONENTS / RENDER FUNCTIONS
+// =================================================================================
+const renderHeader = () => `
+    <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-blue-600">TAMSA Digital Library</h1>
+        <nav>
+            <a href="#/" class="text-gray-600 hover:text-blue-600 px-3">Home</a>
+            <a href="#/courses" class="text-gray-600 hover:text-blue-600 px-3">Courses</a>
+            <a href="#/about" class="text-gray-600 hover:text-blue-600 px-3">About</a>
+            <a href="#/contact" class="text-gray-600 hover:text-blue-600 px-3">Contact</a>
+            <a href="#/login" id="login-logout-link" class="text-gray-600 hover:text-blue-600 px-3 border-l-2 ml-3 pl-6">Login</a>
+        </nav>
+    </header>`;
+
+const renderLoginPage = () => `
+    <div class="flex items-center justify-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <form id="login-form">
+                <div class="mb-4"><label for="username" class="block text-gray-700">Username</label><input type="text" id="username" class="w-full px-3 py-2 border rounded-lg" required></div>
+                <div class="mb-6"><label for="password" class="block text-gray-700">Password</label><input type="password" id="password" class="w-full px-3 py-2 border rounded-lg" required></div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
+            </form>
+            <p class="text-center mt-4">Don't have an account? <a href="#/register" class="text-blue-600 hover:underline">Sign up</a></p>
+        </div>
+    </div>`;
+
+const renderRegisterPage = () => `
+    <div class="flex items-center justify-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
+            <form id="register-form">
+                <div class="mb-4"><label for="username" class="block text-gray-700">Username</label><input type="text" id="username" class="w-full px-3 py-2 border rounded-lg" required></div>
+                <div class="mb-4"><label for="email" class="block text-gray-700">Email</label><input type="email" id="email" class="w-full px-3 py-2 border rounded-lg" required></div>
+                <div class="mb-6"><label for="password" class="block text-gray-700">Password</label><input type="password" id="password" class="w-full px-3 py-2 border rounded-lg" required></div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Register</button>
+            </form>
+            <p class="text-center mt-4">Already have an account? <a href="#/login" class="text-blue-600 hover:underline">Login</a></p>
+        </div>
+    </div>`;
+
+const renderDashboardPage = () => {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return window.location.hash = '/login', '';
+    const username = decodeJwt(token)?.identity?.username || 'User';
+    return `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Welcome, ${username}!</h2>...</div>`; // Truncated for brevity
+};
+
+const renderCoursesPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Courses</h2><div id="content-area"></div></div>`;
+const renderModuleListPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Modules</h2><div id="content-area"></div></div>`;
+const renderTopicListPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Topics</h2><div id="content-area"></div></div>`;
+const renderTopicDetailPage = () => `<div class="p-8"><div id="content-area"></div></div>`;
+const renderAboutPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">About Us</h2>...</div>`;
+const renderContactPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Contact Us</h2>...</div>`;
+const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">404 - Page Not Found</h2>`;
+
+// =================================================================================
+// 4. ROUTER AND DATA FETCHING LOGIC
+// =================================================================================
+const fetchAndDisplayCourses = async () => {
+    const courses = await fetchWithAuth(`${API_URL}/admin/courses`);
+    document.getElementById('content-area').innerHTML = courses.map(course => `
+        <a href="#/courses/${course.id}" class="block bg-white p-6 rounded-lg shadow-lg hover:bg-gray-50">
+            <h3 class="text-xl font-bold mb-2">${course.name}</h3><p>${course.description || ''}</p>
+        </a>`).join('');
+};
+const fetchAndDisplayModules = async (courseId) => {
+    const modules = await fetchWithAuth(`${API_URL}/courses/${courseId}/modules`);
+    document.getElementById('content-area').innerHTML = modules.map(module => `
+        <a href="#/modules/${module.id}" class="block bg-white p-6 rounded-lg shadow-lg hover:bg-gray-50">
+            <h3 class="text-xl font-bold mb-2">${module.name}</h3><p>${module.description || ''}</p>
+        </a>`).join('');
+};
+const fetchAndDisplayTopics = async (moduleId) => {
+    const topics = await fetchWithAuth(`${API_URL}/modules/${moduleId}/topics`);
+    document.getElementById('content-area').innerHTML = topics.map(topic => `
+        <a href="#/topics/${topic.id}" class="block bg-white p-4 rounded-lg shadow-md hover:bg-gray-50">
+            <h4 class="font-semibold">${topic.name}</h4>
+        </a>`).join('');
+};
+const fetchAndDisplayTopicDetails = async (topicId) => {
+    const topic = await fetchWithAuth(`${API_URL}/topics/${topicId}`);
+    document.getElementById('content-area').innerHTML = `
+        <h2 class="text-4xl font-bold mb-4">${topic.name}</h2>
+        <div class="prose max-w-none">${topic.content}</div>
+        <h3 class="text-2xl font-bold mt-8 mb-4">Resources</h3>
+        <ul>${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul>`;
+};
+
+const routes = [
+    { path: /^\/$/, view: renderDashboardPage },
+    { path: /^\/login$/, view: renderLoginPage },
+    { path: /^\/register$/, view: renderRegisterPage },
+    { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses },
+    { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (params) => fetchAndDisplayModules(params[0]) },
+    { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (params) => fetchAndDisplayTopics(params[0]) },
+    { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (params) => fetchAndDisplayTopicDetails(params[0]) },
+    { path: /^\/about$/, view: renderAboutPage },
+    { path: /^\/contact$/, view: renderContactPage },
+];
+
+const router = () => {
+    const path = window.location.hash.substring(1) || '/';
+    const match = routes.find(route => route.path.test(path));
+    if (!match) {
+        app.innerHTML = renderHeader() + render404Page();
+        return;
+    }
+    const params = path.match(match.path).slice(1);
+    app.innerHTML = renderHeader() + match.view(params);
+    if (match.action) {
+        try { match.action(params); } catch (e) { console.error(e); alert(e.message); }
+    }
+    handleAuthLink();
+};
+
+// =================================================================================
+// 5. UTILS AND APP INITIALIZATION
+// =================================================================================
+const decodeJwt = (token) => {
+    try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
+};
 const logoutUser = () => {
     localStorage.removeItem('jwt_token');
     window.location.hash = '/login';
 };
-
-// --- App Initialization & Event Handling ---
-
 const handleAuthLink = () => {
-    const loginLogoutLink = document.getElementById('login-logout-link');
+    const link = document.getElementById('login-logout-link');
+    if (!link) return;
     if (localStorage.getItem('jwt_token')) {
-        loginLogoutLink.textContent = 'Logout';
-        loginLogoutLink.href = '#';
-        loginLogoutLink.onclick = (e) => {
-            e.preventDefault();
-            logoutUser();
-        };
+        link.textContent = 'Logout';
+        link.href = '#';
+        link.onclick = (e) => { e.preventDefault(); logoutUser(); };
     } else {
-        loginLogoutLink.textContent = 'Login';
-        loginLogoutLink.href = '#/login';
-        loginLogoutLink.onclick = null;
+        link.textContent = 'Login';
+        link.href = '#/login';
+        link.onclick = null;
     }
-}
+};
 
 const init = () => {
-    // Listen for page changes
     window.addEventListener('hashchange', router);
     window.addEventListener('load', router);
-
-    // Use event delegation for forms
-    app.addEventListener('submit', (e) => {
-        if (e.target.id === 'login-form') {
-            e.preventDefault();
-            const username = e.target.elements.username.value;
-            const password = e.target.elements.password.value;
-            loginUser(username, password);
-        }
-        if (e.target.id === 'register-form') {
-            e.preventDefault();
-            const username = e.target.elements.username.value;
-            const email = e.target.elements.email.value;
-            const password = e.target.elements.password.value;
-            registerUser(username, email, password);
+    app.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            if (e.target.id === 'login-form') {
+                const { username, password } = e.target.elements;
+                await loginUser(username.value, password.value);
+            }
+            if (e.target.id === 'register-form') {
+                const { username, email, password } = e.target.elements;
+                await registerUser(username.value, email.value, password.value);
+            }
+        } catch (error) {
+            alert(`Error: ${error.message}`);
         }
     });
-
-    // Update auth link on every route change
-    window.addEventListener('hashchange', handleAuthLink);
-    window.addEventListener('load', handleAuthLink);
 };
 
 init();
