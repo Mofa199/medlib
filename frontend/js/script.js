@@ -35,6 +35,37 @@ const renderLoginPage = () => {
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
                 </form>
+                <p class="text-center mt-4">
+                    Don't have an account? <a href="#/register" class="text-blue-600 hover:underline">Sign up</a>
+                </p>
+            </div>
+        </div>
+    `;
+};
+
+const renderRegisterPage = () => {
+    return `
+        <div class="flex items-center justify-center h-screen">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+                <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
+                <form id="register-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-700">Username</label>
+                        <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700">Email</label>
+                        <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700">Password</label>
+                        <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Register</button>
+                </form>
+                <p class="text-center mt-4">
+                    Already have an account? <a href="#/login" class="text-blue-600 hover:underline">Login</a>
+                </p>
             </div>
         </div>
     `;
@@ -142,6 +173,7 @@ const renderContactPage = () => {
 const routes = {
     '/': renderDashboardPage,
     '/login': renderLoginPage,
+    '/register': renderRegisterPage,
     '/courses': renderCoursesPage,
     '/about': renderAboutPage,
     '/contact': renderContactPage,
@@ -230,6 +262,24 @@ const loginUser = async (username, password) => {
     }
 };
 
+const registerUser = async (username, email, password) => {
+    try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Registration failed');
+        }
+        alert('Registration successful! Please log in.');
+        window.location.hash = '/login';
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+};
+
 const logoutUser = () => {
     localStorage.removeItem('jwt_token');
     window.location.hash = '/login';
@@ -258,13 +308,20 @@ const init = () => {
     window.addEventListener('hashchange', router);
     window.addEventListener('load', router);
 
-    // Use event delegation for the login form
+    // Use event delegation for forms
     app.addEventListener('submit', (e) => {
         if (e.target.id === 'login-form') {
             e.preventDefault();
             const username = e.target.elements.username.value;
             const password = e.target.elements.password.value;
             loginUser(username, password);
+        }
+        if (e.target.id === 'register-form') {
+            e.preventDefault();
+            const username = e.target.elements.username.value;
+            const email = e.target.elements.email.value;
+            const password = e.target.elements.password.value;
+            registerUser(username, email, password);
         }
     });
 
