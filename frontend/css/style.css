@@ -3,3 +3,8 @@ body {
     /* Example: Add a custom font if needed */
     /* font-family: 'Inter', sans-serif; */
 }
+
+#chat-close-button {
+    font-size: 1.5rem;
+    line-height: 1;
+}

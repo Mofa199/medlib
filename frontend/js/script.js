@@ -38,6 +38,14 @@ const loginUser = async (username, password) => {
     window.location.hash = '/';
 };
 
+const getAIChatResponse = (message) => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve("I am a helpful library assistant. As this is a demonstration, I don't have access to the library's content, but I'm here to help with general questions!");
+        }, 1000); // Simulate 1 second network delay
+    });
+};
+
 const registerUser = async (username, email, password) => {
     const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
@@ -233,6 +241,37 @@ const handleAuthLink = () => {
 };
 
 const init = () => {
+    // --- Chatbot UI Logic ---
+    const chatOpenButton = document.getElementById('chat-open-button');
+    const chatCloseButton = document.getElementById('chat-close-button');
+    const chatWindow = document.getElementById('chat-window');
+    const chatForm = document.getElementById('chat-form');
+
+    chatOpenButton.addEventListener('click', () => chatWindow.classList.remove('hidden'));
+    chatCloseButton.addEventListener('click', () => chatWindow.classList.add('hidden'));
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const userMessage = chatInput.value.trim();
+
+        if (userMessage) {
+            // Display user's message
+            chatMessages.innerHTML += `<div class="text-right my-2"><p class="bg-blue-500 text-white rounded-lg py-2 px-4 inline-block">${userMessage}</p></div>`;
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simulate AI response
+            const aiResponse = await getAIChatResponse(userMessage);
+
+            // Display AI's message
+            chatMessages.innerHTML += `<div class="text-left my-2"><p class="bg-gray-200 text-gray-800 rounded-lg py-2 px-4 inline-block">${aiResponse}</p></div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    });
+
+    // --- Main App Logic ---
     window.addEventListener('hashchange', router);
     window.addEventListener('load', router);
     app.addEventListener('submit', async (e) => {
