@@ -2,6 +2,13 @@ from backend.app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 
+# Association table for the many-to-many relationship between users and topics
+user_topic_progress = db.Table('user_topic_progress',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('topic_id', db.Integer, db.ForeignKey('topics.id'), primary_key=True),
+    db.Column('completed_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
+)
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,6 +17,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(256))
     role = db.Column(db.String(20), default='student', nullable=False) # 'student' or 'admin'
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    completed_topics = db.relationship('Topic', secondary=user_topic_progress, lazy='dynamic',
+                                     backref=db.backref('completed_by_users', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
