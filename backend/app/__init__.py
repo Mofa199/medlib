@@ -20,7 +20,7 @@ def create_app(config_class=Config):
 
     # Only enable CORS for non-testing environments
     if not app.config.get('TESTING', False):
-        CORS(app, resources={r"/*": {"origins": "*"}})
+        CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
     # Register blueprints
     from backend.app.routes.main import bp as main_bp
