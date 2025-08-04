@@ -190,3 +190,16 @@ def delete_resource(id):
     db.session.commit()
 
     return jsonify({'message': 'Resource deleted successfully'})
+
+# -- User Management --
+
+@bp.route('/users', methods=['GET'])
+@admin_required
+def get_users():
+    users = User.query.all()
+    return jsonify([{
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'role': user.role
+    } for user in users])

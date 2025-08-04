@@ -84,6 +84,7 @@ const renderHeader = () => `
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
             <a href="#/login" id="login-logout-link" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 border-l-2 dark:border-gray-600 ml-3 pl-6">Login</a>
+            <div id="admin-link-container"></div>
         </nav>
     </header>`;
 
@@ -135,6 +136,27 @@ const renderAboutPage = () => `
         <div class="max-w-4xl mx-auto"><div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg"><h3 class="text-2xl font-bold mb-4 text-center text-blue-600 dark:text-blue-400">Meet the Team</h3><p class="text-center text-gray-700 dark:text-gray-300">(A carousel or grid of team member profiles will be displayed here.)</p></div></div>
     </div>`;
 const renderContactPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6 dark:text-white">Contact Us</h2></div>`;
+
+const renderAdminDashboardPage = () => `
+    <div class="p-8">
+        <h2 class="text-3xl font-bold mb-6 dark:text-white">Admin Dashboard</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="#/admin/users" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                <h3 class="text-xl font-bold dark:text-white">User Management</h3>
+            </a>
+            <!-- Other admin links can go here -->
+        </div>
+    </div>`;
+
+const renderUserManagementPage = () => `
+    <div class="p-8">
+        <h2 class="text-3xl font-bold mb-6 dark:text-white">User Management</h2>
+        <div id="content-area" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg overflow-x-auto">
+            <!-- User table will be rendered here -->
+            <p class="dark:text-white">Loading users...</p>
+        </div>
+    </div>`;
+
 const renderFAQPage = () => {
     const FAQ_DATA = [ { q: 'How do I reset my password?', a: 'You can reset your password by clicking the "Forgot Password" link on the login page.' }, { q: 'How do I access course materials?', a: 'Once you are logged in, you can access all your courses and their materials from the "Courses" page.' }, { q: 'Who can I contact for support?', a: 'For any support-related questions, please visit our "Contact Us" page and send us a message.' } ];
     return `<div class="p-8 bg-gray-50 dark:bg-gray-900"><h2 class="text-4xl font-bold text-center mb-12 dark:text-white">Frequently Asked Questions</h2><div class="max-w-4xl mx-auto">${FAQ_DATA.map((faq, index) => `<div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion('faq-${index}')">${faq.q}</button><div id="accordion-faq-${index}" class="hidden p-4 bg-white dark:bg-gray-800"><p class="text-gray-700 dark:text-gray-300">${faq.a}</p></div></div>`).join('')}</div></div>`;
@@ -173,8 +195,36 @@ const fetchAndDisplayTopicDetails = async (topicId) => {
     if (!contentArea) return;
     const topic = await fetchWithAuth(`${API_URL}/topics/${topicId}`);
     const isCompleted = userProgress.completedTopics.has(topic.id);
-    contentArea.innerHTML = `<h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2><div class="prose dark:prose-invert max-w-none">${topic.content}</div><h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3><ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul><button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 px-4 rounded-lg">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
+    contentArea.innerHTML = `<h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2><div class="prose dark:prose-invert max-w-none">${topic.content}</div><h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3><ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul><button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500' : 'bg-blue-600'} text-white py-2 px-4 rounded-lg" ${isCompleted ? 'disabled' : ''}>${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
 };
+const fetchAndDisplayUsers = async () => {
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
+    const users = await fetchWithAuth(`${API_URL}/admin/users`);
+    contentArea.innerHTML = `
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Username</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                ${users.map(user => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${user.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${user.username}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${user.email}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${user.role}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+};
+
 const displayDashboardData = () => {
     const dashboardContent = document.getElementById('dashboard-content');
     if (!dashboardContent) return;
@@ -184,7 +234,15 @@ const displayDashboardData = () => {
 
 const routes = [ { path: /^\/$/, view: renderDashboardPage, action: displayDashboardData }, { path: /^\/login$/, view: renderLoginPage }, { path: /^\/register$/, view: renderRegisterPage }, { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses }, { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (p) => fetchAndDisplayModules(p[0]) }, { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (p) => fetchAndDisplayTopics(p[0]) }, { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (p) => fetchAndDisplayTopicDetails(p[0]) }, { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: displayPharmacologyData }, { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage }, { path: /^\/about$/, view: renderAboutPage }, { path: /^\/contact$/, view: renderContactPage }, { path: /^\/faq$/, view: renderFAQPage }, ];
 const router = () => {
+    const token = localStorage.getItem('jwt_token');
     const path = window.location.hash.substring(1) || '/';
+
+    // If not logged in, only allow access to login/register pages
+    if (!token && path !== '/login' && path !== '/register') {
+        window.location.hash = '/login';
+        return;
+    }
+
     const match = routes.find(route => route.path.test(path));
     if (!match) { app.innerHTML = renderHeader() + render404Page(); return; }
     const params = path.match(match.path).slice(1);
@@ -205,7 +263,31 @@ const logoutUser = () => {
     userProgress.completedTopics = new Set(); // Clear progress on logout
     window.location.hash = '/login';
 };
-const handleAuthLink = () => { const link = document.getElementById('login-logout-link'); if (!link) return; if (localStorage.getItem('jwt_token')) { link.textContent = 'Logout'; link.href = '#'; link.onclick = (e) => { e.preventDefault(); logoutUser(); }; } else { link.textContent = 'Login'; link.href = '#/login'; link.onclick = null; } };
+const handleAuthLink = () => {
+    const link = document.getElementById('login-logout-link');
+    const adminContainer = document.getElementById('admin-link-container');
+    if (!link || !adminContainer) return;
+
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+        link.textContent = 'Logout';
+        link.href = '#';
+        link.onclick = (e) => { e.preventDefault(); logoutUser(); };
+
+        const userData = decodeJwt(token);
+        if (userData?.identity?.role === 'admin') {
+            adminContainer.innerHTML = `<a href="#/admin" class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 px-3 border-l-2 dark:border-gray-600 ml-3 pl-6">Admin</a>`;
+        } else {
+            adminContainer.innerHTML = '';
+        }
+
+    } else {
+        link.textContent = 'Login';
+        link.href = '#/login';
+        link.onclick = null;
+        adminContainer.innerHTML = '';
+    }
+};
 
 const fetchUserProgress = async () => {
     try {
@@ -235,12 +317,8 @@ const init = () => {
             const topicId = parseInt(button.dataset.topicId);
             try {
                 await markTopicAsCompleteAPI(topicId);
-                // After successful API call, update local state and UI
-                if (userProgress.completedTopics.has(topicId)) {
-                    // This part is now just for local state, as the backend handles the logic
-                } else {
-                    userProgress.completedTopics.add(topicId);
-                }
+                // After successful API call, update local state
+                userProgress.completedTopics.add(topicId);
                 // Re-render button to show new state
                 button.textContent = '✓ Completed';
                 button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
