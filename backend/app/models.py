@@ -9,6 +9,21 @@ user_topic_progress = db.Table('user_topic_progress',
     db.Column('completed_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
 )
 
+user_badge_association = db.Table('user_badge_association',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('badge_id', db.Integer, db.ForeignKey('badges.id'), primary_key=True)
+)
+
+class Badge(db.Model):
+    __tablename__ = 'badges'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False, unique=True)
+    description = db.Column(db.String(256))
+    icon = db.Column(db.String(128)) # e.g., a unicode emoji or a path to an image
+
+    def __repr__(self):
+        return f'<Badge {self.name}>'
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -20,6 +35,9 @@ class User(db.Model):
 
     completed_topics = db.relationship('Topic', secondary=user_topic_progress, lazy='dynamic',
                                      backref=db.backref('completed_by_users', lazy='dynamic'))
+
+    badges = db.relationship('Badge', secondary=user_badge_association, lazy='dynamic',
+                             backref=db.backref('users', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

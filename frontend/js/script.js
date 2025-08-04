@@ -225,11 +225,41 @@ const fetchAndDisplayUsers = async () => {
     `;
 };
 
+const fetchAndDisplayBadges = async () => {
+    const badges = await fetchWithAuth(`${API_URL}/api/badges`);
+    const badgeContainer = document.getElementById('badge-container');
+    if (!badgeContainer) return;
+
+    if (badges.length === 0) {
+        badgeContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No badges earned yet. Keep learning!</p>`;
+        return;
+    }
+
+    badgeContainer.innerHTML = badges.map(badge => `
+        <div class="flex items-center space-x-4" title="${badge.description}">
+            <div class="text-4xl">${badge.icon}</div>
+            <p class="font-semibold dark:text-white">${badge.name}</p>
+        </div>
+    `).join('');
+};
+
 const displayDashboardData = () => {
     const dashboardContent = document.getElementById('dashboard-content');
     if (!dashboardContent) return;
     const completedCount = userProgress.completedTopics.size;
-    dashboardContent.innerHTML = `<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3><p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p></div><div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3><div class="flex space-x-4"><div class="text-4xl">🏅</div><div class="text-4xl">🏆</div></div></div>`;
+    dashboardContent.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3>
+            <p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3>
+            <div id="badge-container" class="flex flex-col space-y-4">
+                <p class="text-gray-500 dark:text-gray-400">Loading badges...</p>
+            </div>
+        </div>
+    `;
+    fetchAndDisplayBadges();
 };
 
 const routes = [ { path: /^\/$/, view: renderDashboardPage, action: displayDashboardData }, { path: /^\/login$/, view: renderLoginPage }, { path: /^\/register$/, view: renderRegisterPage }, { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses }, { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (p) => fetchAndDisplayModules(p[0]) }, { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (p) => fetchAndDisplayTopics(p[0]) }, { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (p) => fetchAndDisplayTopicDetails(p[0]) }, { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: displayPharmacologyData }, { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage }, { path: /^\/about$/, view: renderAboutPage }, { path: /^\/contact$/, view: renderContactPage }, { path: /^\/faq$/, view: renderFAQPage }, ];
