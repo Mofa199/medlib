@@ -146,28 +146,40 @@ const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">4
 // =================================================================================
 const PHARMACOLOGY_DATA = [{category: 'Analgesics',drugs: ['Aspirin', 'Ibuprofen', 'Paracetamol', 'Morphine']}, {category: 'Antibiotics',drugs: ['Penicillin', 'Amoxicillin', 'Ciprofloxacin', 'Doxycycline']}, {category: 'Antihypertensives',drugs: ['Lisinopril', 'Amlodipine', 'Metoprolol', 'Losartan']}];
 const displayPharmacologyData = () => {
-    document.getElementById('content-area').innerHTML = PHARMACOLOGY_DATA.map((cat, index) => `<div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion('pharma-${index}')">${cat.category}</button><div id="accordion-pharma-${index}" class="hidden p-4"><ul class="list-disc list-inside">${cat.drugs.map(drug => `<li><a href="#/drugs/${encodeURIComponent(drug)}" class="text-blue-600 dark:text-blue-400 hover:underline">${drug}</a></li>`).join('')}</ul></div></div>`).join('');
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
+    contentArea.innerHTML = PHARMACOLOGY_DATA.map((cat, index) => `<div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion('pharma-${index}')">${cat.category}</button><div id="accordion-pharma-${index}" class="hidden p-4"><ul class="list-disc list-inside">${cat.drugs.map(drug => `<li><a href="#/drugs/${encodeURIComponent(drug)}" class="text-blue-600 dark:text-blue-400 hover:underline">${drug}</a></li>`).join('')}</ul></div></div>`).join('');
 };
 const fetchAndDisplayCourses = async () => {
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
     const courses = await fetchWithAuth(`${API_URL}/admin/courses`);
-    document.getElementById('content-area').innerHTML = courses.map(course => `<a href="#/courses/${course.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${course.name}</h3><p class="text-gray-700 dark:text-gray-300">${course.description || ''}</p></a>`).join('');
+    contentArea.innerHTML = courses.map(course => `<a href="#/courses/${course.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${course.name}</h3><p class="text-gray-700 dark:text-gray-300">${course.description || ''}</p></a>`).join('');
 };
 const fetchAndDisplayModules = async (courseId) => {
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
     const modules = await fetchWithAuth(`${API_URL}/courses/${courseId}/modules`);
-    document.getElementById('content-area').innerHTML = modules.map(module => `<a href="#/modules/${module.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${module.name}</h3><p class="text-gray-700 dark:text-gray-300">${module.description || ''}</p></a>`).join('');
+    contentArea.innerHTML = modules.map(module => `<a href="#/modules/${module.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${module.name}</h3><p class="text-gray-700 dark:text-gray-300">${module.description || ''}</p></a>`).join('');
 };
 const fetchAndDisplayTopics = async (moduleId) => {
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
     const topics = await fetchWithAuth(`${API_URL}/modules/${moduleId}/topics`);
-    document.getElementById('content-area').innerHTML = topics.map(topic => `<a href="#/topics/${topic.id}" class="block bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700"><h4 class="font-semibold dark:text-white">${topic.name}</h4></a>`).join('');
+    contentArea.innerHTML = topics.map(topic => `<a href="#/topics/${topic.id}" class="block bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700"><h4 class="font-semibold dark:text-white">${topic.name}</h4></a>`).join('');
 };
 const fetchAndDisplayTopicDetails = async (topicId) => {
+    const contentArea = document.getElementById('content-area');
+    if (!contentArea) return;
     const topic = await fetchWithAuth(`${API_URL}/topics/${topicId}`);
     const isCompleted = userProgress.completedTopics.has(topic.id);
-    document.getElementById('content-area').innerHTML = `<h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2><div class="prose dark:prose-invert max-w-none">${topic.content}</div><h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3><ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul><button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 px-4 rounded-lg">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
+    contentArea.innerHTML = `<h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2><div class="prose dark:prose-invert max-w-none">${topic.content}</div><h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3><ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul><button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 px-4 rounded-lg">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
 };
 const displayDashboardData = () => {
+    const dashboardContent = document.getElementById('dashboard-content');
+    if (!dashboardContent) return;
     const completedCount = userProgress.completedTopics.size;
-    document.getElementById('dashboard-content').innerHTML = `<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3><p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p></div><div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3><div class="flex space-x-4"><div class="text-4xl">🏅</div><div class="text-4xl">🏆</div></div></div>`;
+    dashboardContent.innerHTML = `<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3><p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p></div><div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3><div class="flex space-x-4"><div class="text-4xl">🏅</div><div class="text-4xl">🏆</div></div></div>`;
 };
 
 const routes = [ { path: /^\/$/, view: renderDashboardPage, action: displayDashboardData }, { path: /^\/login$/, view: renderLoginPage }, { path: /^\/register$/, view: renderRegisterPage }, { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses }, { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (p) => fetchAndDisplayModules(p[0]) }, { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (p) => fetchAndDisplayTopics(p[0]) }, { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (p) => fetchAndDisplayTopicDetails(p[0]) }, { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: displayPharmacologyData }, { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage }, { path: /^\/about$/, view: renderAboutPage }, { path: /^\/contact$/, view: renderContactPage }, { path: /^\/faq$/, view: renderFAQPage }, ];
@@ -225,14 +237,15 @@ const init = () => {
                 await markTopicAsCompleteAPI(topicId);
                 // After successful API call, update local state and UI
                 if (userProgress.completedTopics.has(topicId)) {
-                    userProgress.completedTopics.delete(topicId); // This is a toggle, which might not be desired. Let's make it one-way.
+                    // This part is now just for local state, as the backend handles the logic
                 } else {
                     userProgress.completedTopics.add(topicId);
                 }
                 // Re-render button to show new state
                 button.textContent = '✓ Completed';
                 button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                button.classList.add('bg-green-500', 'hover:bg-green-600');
+                button.classList.add('bg-green-500');
+                button.disabled = true;
 
                 // Optionally, re-render dashboard data if visible
                 if(window.location.hash === '#/') {
