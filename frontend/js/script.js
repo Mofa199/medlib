@@ -38,6 +38,7 @@ const loginUser = async (username, password) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Login failed');
     localStorage.setItem('jwt_token', data.access_token);
+    await fetchUserProgress(); // Fetch progress right after login
     window.location.hash = '/';
 };
 
@@ -60,6 +61,12 @@ const registerUser = async (username, email, password) => {
     alert('Registration successful! Please log in.');
     window.location.hash = '/login';
 };
+
+const markTopicAsCompleteAPI = async (topicId) => {
+    // This is a real API call that will be made
+    return await fetchWithAuth(`${API_URL}/api/topics/${topicId}/complete`, { method: 'POST' });
+};
+
 
 // =================================================================================
 // 3. UI COMPONENTS / RENDER FUNCTIONS
@@ -180,8 +187,22 @@ const toggleAccordion = (index) => { document.getElementById(`accordion-${index}
 const toggleTheme = () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); };
 const loadTheme = () => { const theme = localStorage.getItem('theme'); if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); } else { document.documentElement.classList.remove('dark'); } };
 const decodeJwt = (token) => { try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; } };
-const logoutUser = () => { localStorage.removeItem('jwt_token'); window.location.hash = '/login'; };
+const logoutUser = () => {
+    localStorage.removeItem('jwt_token');
+    userProgress.completedTopics = new Set(); // Clear progress on logout
+    window.location.hash = '/login';
+};
 const handleAuthLink = () => { const link = document.getElementById('login-logout-link'); if (!link) return; if (localStorage.getItem('jwt_token')) { link.textContent = 'Logout'; link.href = '#'; link.onclick = (e) => { e.preventDefault(); logoutUser(); }; } else { link.textContent = 'Login'; link.href = '#/login'; link.onclick = null; } };
+
+const fetchUserProgress = async () => {
+    try {
+        const data = await fetchWithAuth(`${API_URL}/api/progress`);
+        userProgress.completedTopics = new Set(data.completed_topic_ids);
+    } catch (e) {
+        console.error("Could not fetch user progress. User might not be logged in.", e);
+        userProgress.completedTopics = new Set();
+    }
+};
 
 const init = () => {
     loadTheme();

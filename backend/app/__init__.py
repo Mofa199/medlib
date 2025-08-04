@@ -32,4 +32,7 @@ def create_app(config_class=Config):
     from backend.app.routes.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
+    from backend.app.routes.progress import bp as progress_bp
+    app.register_blueprint(progress_bp, url_prefix='/api')
+
     return app
