@@ -63,7 +63,6 @@ const registerUser = async (username, email, password) => {
 };
 
 const markTopicAsCompleteAPI = async (topicId) => {
-    // This is a real API call that will be made
     return await fetchWithAuth(`${API_URL}/api/topics/${topicId}/complete`, { method: 'POST' });
 };
 
@@ -79,6 +78,7 @@ const renderHeader = () => `
             <a href="#/courses" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3">Courses</a>
             <a href="#/pharmacology" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3">Pharmacology</a>
             <a href="#/about" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3">About</a>
+            <a href="#/faq" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3">FAQ</a>
             <a href="#/contact" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3">Contact</a>
             <button id="theme-toggle" class="ml-4 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -127,8 +127,18 @@ const renderTopicListPage = (params) => `<div class="p-8"><h2 class="text-3xl fo
 const renderTopicDetailPage = () => `<div class="p-8" id="content-area"></div>`;
 const renderPharmacologyPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6 dark:text-white">Pharmacology</h2><div id="content-area"></div></div>`;
 const renderDrugDetailPage = (params) => `<div class="p-8"><h2 class="text-3xl font-bold mb-6 dark:text-white">Details for ${decodeURIComponent(params[0])}</h2><p class="dark:text-gray-300">Detailed information about ${decodeURIComponent(params[0])} will be displayed here.</p></div>`;
-const renderAboutPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6 dark:text-white">About Us</h2></div>`;
+const renderAboutPage = () => `
+    <div class="p-8 bg-gray-50 dark:bg-gray-900">
+        <h2 class="text-4xl font-bold text-center mb-12 dark:text-white">About TAMSA Digital Library</h2>
+        <div class="max-w-4xl mx-auto mb-12"><div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg"><h3 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Our Mission</h3><p class="text-gray-700 dark:text-gray-300">To empower the next generation of medical professionals by providing a world-class, accessible, and comprehensive digital library. We are committed to fostering a community of learning, innovation, and excellence in medical education.</p></div></div>
+        <div class="max-w-4xl mx-auto mb-12"><div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg"><h3 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Our History</h3><p class="text-gray-700 dark:text-gray-300">Founded in 2024, the TAMSA Digital Library project was initiated to bridge the gap in digital academic resources for students in medicine, nursing, and pharmacy. From a simple idea, it has grown into a comprehensive platform designed to support every step of the student journey.</p></div></div>
+        <div class="max-w-4xl mx-auto"><div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg"><h3 class="text-2xl font-bold mb-4 text-center text-blue-600 dark:text-blue-400">Meet the Team</h3><p class="text-center text-gray-700 dark:text-gray-300">(A carousel or grid of team member profiles will be displayed here.)</p></div></div>
+    </div>`;
 const renderContactPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6 dark:text-white">Contact Us</h2></div>`;
+const renderFAQPage = () => {
+    const FAQ_DATA = [ { q: 'How do I reset my password?', a: 'You can reset your password by clicking the "Forgot Password" link on the login page.' }, { q: 'How do I access course materials?', a: 'Once you are logged in, you can access all your courses and their materials from the "Courses" page.' }, { q: 'Who can I contact for support?', a: 'For any support-related questions, please visit our "Contact Us" page and send us a message.' } ];
+    return `<div class="p-8 bg-gray-50 dark:bg-gray-900"><h2 class="text-4xl font-bold text-center mb-12 dark:text-white">Frequently Asked Questions</h2><div class="max-w-4xl mx-auto">${FAQ_DATA.map((faq, index) => `<div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion('faq-${index}')">${faq.q}</button><div id="accordion-faq-${index}" class="hidden p-4 bg-white dark:bg-gray-800"><p class="text-gray-700 dark:text-gray-300">${faq.a}</p></div></div>`).join('')}</div></div>`;
+};
 const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">404 - Page Not Found</h2>`;
 
 // =================================================================================
@@ -136,13 +146,11 @@ const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">4
 // =================================================================================
 const PHARMACOLOGY_DATA = [{category: 'Analgesics',drugs: ['Aspirin', 'Ibuprofen', 'Paracetamol', 'Morphine']}, {category: 'Antibiotics',drugs: ['Penicillin', 'Amoxicillin', 'Ciprofloxacin', 'Doxycycline']}, {category: 'Antihypertensives',drugs: ['Lisinopril', 'Amlodipine', 'Metoprolol', 'Losartan']}];
 const displayPharmacologyData = () => {
-    document.getElementById('content-area').innerHTML = PHARMACOLOGY_DATA.map((cat, index) => `
-        <div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion(${index})">${cat.category}</button><div id="accordion-${index}" class="hidden p-4"><ul class="list-disc list-inside">${cat.drugs.map(drug => `<li><a href="#/drugs/${encodeURIComponent(drug)}" class="text-blue-600 dark:text-blue-400 hover:underline">${drug}</a></li>`).join('')}</ul></div></div>`).join('');
+    document.getElementById('content-area').innerHTML = PHARMACOLOGY_DATA.map((cat, index) => `<div class="mb-4 border dark:border-gray-700 rounded-lg"><button class="w-full text-left p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold dark:text-white" onclick="toggleAccordion('pharma-${index}')">${cat.category}</button><div id="accordion-pharma-${index}" class="hidden p-4"><ul class="list-disc list-inside">${cat.drugs.map(drug => `<li><a href="#/drugs/${encodeURIComponent(drug)}" class="text-blue-600 dark:text-blue-400 hover:underline">${drug}</a></li>`).join('')}</ul></div></div>`).join('');
 };
 const fetchAndDisplayCourses = async () => {
     const courses = await fetchWithAuth(`${API_URL}/admin/courses`);
-    document.getElementById('content-area').innerHTML = courses.map(course => `
-        <a href="#/courses/${course.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${course.name}</h3><p class="text-gray-700 dark:text-gray-300">${course.description || ''}</p></a>`).join('');
+    document.getElementById('content-area').innerHTML = courses.map(course => `<a href="#/courses/${course.id}" class="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"><h3 class="text-xl font-bold mb-2 dark:text-white">${course.name}</h3><p class="text-gray-700 dark:text-gray-300">${course.description || ''}</p></a>`).join('');
 };
 const fetchAndDisplayModules = async (courseId) => {
     const modules = await fetchWithAuth(`${API_URL}/courses/${courseId}/modules`);
@@ -155,21 +163,14 @@ const fetchAndDisplayTopics = async (moduleId) => {
 const fetchAndDisplayTopicDetails = async (topicId) => {
     const topic = await fetchWithAuth(`${API_URL}/topics/${topicId}`);
     const isCompleted = userProgress.completedTopics.has(topic.id);
-    document.getElementById('content-area').innerHTML = `
-        <h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2>
-        <div class="prose dark:prose-invert max-w-none">${topic.content}</div>
-        <h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3>
-        <ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul>
-        <button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 px-4 rounded-lg">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
+    document.getElementById('content-area').innerHTML = `<h2 class="text-4xl font-bold mb-4 dark:text-white">${topic.name}</h2><div class="prose dark:prose-invert max-w-none">${topic.content}</div><h3 class="text-2xl font-bold mt-8 mb-4 dark:text-white">Resources</h3><ul class="list-disc list-inside mb-8 dark:text-gray-300">${topic.resources.map(r => `<li><a href="${r.path_or_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${r.name}</a> (${r.resource_type})</li>`).join('')}</ul><button id="mark-complete-btn" data-topic-id="${topic.id}" class="${isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 px-4 rounded-lg">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`;
 };
 const displayDashboardData = () => {
     const completedCount = userProgress.completedTopics.size;
-    document.getElementById('dashboard-content').innerHTML = `
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3><p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p></div>
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3><div class="flex space-x-4"><div class="text-4xl">🏅</div><div class="text-4xl">🏆</div></div></div>`;
+    document.getElementById('dashboard-content').innerHTML = `<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Progress</h3><p class="text-gray-700 dark:text-gray-300">You have completed <strong>${completedCount}</strong> topics.</p></div><div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold mb-4 dark:text-white">My Badges</h3><div class="flex space-x-4"><div class="text-4xl">🏅</div><div class="text-4xl">🏆</div></div></div>`;
 };
 
-const routes = [ { path: /^\/$/, view: renderDashboardPage, action: displayDashboardData }, { path: /^\/login$/, view: renderLoginPage }, { path: /^\/register$/, view: renderRegisterPage }, { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses }, { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (p) => fetchAndDisplayModules(p[0]) }, { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (p) => fetchAndDisplayTopics(p[0]) }, { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (p) => fetchAndDisplayTopicDetails(p[0]) }, { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: displayPharmacologyData }, { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage }, { path: /^\/about$/, view: renderAboutPage }, { path: /^\/contact$/, view: renderContactPage }, ];
+const routes = [ { path: /^\/$/, view: renderDashboardPage, action: displayDashboardData }, { path: /^\/login$/, view: renderLoginPage }, { path: /^\/register$/, view: renderRegisterPage }, { path: /^\/courses$/, view: renderCoursesPage, action: fetchAndDisplayCourses }, { path: /^\/courses\/(\d+)$/, view: renderModuleListPage, action: (p) => fetchAndDisplayModules(p[0]) }, { path: /^\/modules\/(\d+)$/, view: renderTopicListPage, action: (p) => fetchAndDisplayTopics(p[0]) }, { path: /^\/topics\/(\d+)$/, view: renderTopicDetailPage, action: (p) => fetchAndDisplayTopicDetails(p[0]) }, { path: /^\/pharmacology$/, view: renderPharmacologyPage, action: displayPharmacologyData }, { path: /^\/drugs\/([a-zA-Z0-9%]+)$/, view: renderDrugDetailPage }, { path: /^\/about$/, view: renderAboutPage }, { path: /^\/contact$/, view: renderContactPage }, { path: /^\/faq$/, view: renderFAQPage }, ];
 const router = () => {
     const path = window.location.hash.substring(1) || '/';
     const match = routes.find(route => route.path.test(path));
@@ -183,7 +184,7 @@ const router = () => {
 // =================================================================================
 // 5. UTILS AND APP INITIALIZATION
 // =================================================================================
-const toggleAccordion = (index) => { document.getElementById(`accordion-${index}`).classList.toggle('hidden'); };
+const toggleAccordion = (id) => { const content = document.getElementById(`accordion-${id}`); if (content) { content.classList.toggle('hidden'); } };
 const toggleTheme = () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); };
 const loadTheme = () => { const theme = localStorage.getItem('theme'); if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); } else { document.documentElement.classList.remove('dark'); } };
 const decodeJwt = (token) => { try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; } };
@@ -215,16 +216,32 @@ const init = () => {
             if (e.target.id === 'register-form') { await registerUser(e.target.elements.username.value, e.target.elements.email.value, e.target.elements.password.value); }
         } catch (error) { alert(`Error: ${error.message}`); }
     });
-    document.body.addEventListener('click', (e) => {
+    document.body.addEventListener('click', async (e) => {
         if (e.target.closest('#theme-toggle')) { toggleTheme(); }
         if (e.target.closest('#mark-complete-btn')) {
-            const topicId = parseInt(e.target.closest('#mark-complete-btn').dataset.topicId);
-            if (userProgress.completedTopics.has(topicId)) {
-                userProgress.completedTopics.delete(topicId);
-            } else {
-                userProgress.completedTopics.add(topicId);
+            const button = e.target.closest('#mark-complete-btn');
+            const topicId = parseInt(button.dataset.topicId);
+            try {
+                await markTopicAsCompleteAPI(topicId);
+                // After successful API call, update local state and UI
+                if (userProgress.completedTopics.has(topicId)) {
+                    userProgress.completedTopics.delete(topicId); // This is a toggle, which might not be desired. Let's make it one-way.
+                } else {
+                    userProgress.completedTopics.add(topicId);
+                }
+                // Re-render button to show new state
+                button.textContent = '✓ Completed';
+                button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                button.classList.add('bg-green-500', 'hover:bg-green-600');
+
+                // Optionally, re-render dashboard data if visible
+                if(window.location.hash === '#/') {
+                    displayDashboardData();
+                }
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
             }
-            router(); // Re-render the current view to update the button
         }
     });
     const chatOpenButton = document.getElementById('chat-open-button');
