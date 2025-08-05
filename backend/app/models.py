@@ -14,6 +14,27 @@ user_badge_association = db.Table('user_badge_association',
     db.Column('badge_id', db.Integer, db.ForeignKey('badges.id'), primary_key=True)
 )
 
+class NewsArticle(db.Model):
+    __tablename__ = 'news_articles'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f'<NewsArticle {self.title}>'
+
+class Event(db.Model):
+    __tablename__ = 'events'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    event_date = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f'<Event {self.title}>'
+
 class Badge(db.Model):
     __tablename__ = 'badges'
     id = db.Column(db.Integer, primary_key=True)
