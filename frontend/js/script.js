@@ -163,6 +163,118 @@ const router = () => {
 // =================================================================================
 // 5. UTILS AND APP INITIALIZATION
 // =================================================================================
-// ... (rest of the file)
-// This is not the full file content, but a representation of the final structure.
-// I will construct the full file before overwriting.
+const handleAuthLink = () => {
+    const token = localStorage.getItem('jwt_token');
+    const link = document.getElementById('login-logout-link');
+    if (token) {
+        link.textContent = 'Logout';
+        link.href = '#/logout';
+        link.onclick = () => {
+            localStorage.removeItem('jwt_token');
+            window.location.hash = '/login';
+        };
+    } else {
+        link.textContent = 'Login';
+        link.href = '#/login';
+        link.onclick = null;
+    }
+};
+
+const decodeJwt = (token) => {
+    try {
+        return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        return null;
+    }
+};
+
+// Dummy action functions to avoid errors
+const displayDashboardData = () => { document.getElementById('dashboard-content').innerHTML = "Dashboard content goes here."; };
+const fetchAndDisplayCourses = () => { document.getElementById('content-area').innerHTML = "Courses content goes here."; };
+const fetchAndDisplayModules = (courseId) => { document.getElementById('content-area').innerHTML = `Modules for course ${courseId} go here.`; };
+const fetchAndDisplayTopics = (moduleId) => { document.getElementById('content-area').innerHTML = `Topics for module ${moduleId} go here.`; };
+const fetchAndDisplayTopicDetails = (topicId) => { document.getElementById('content-area').innerHTML = `Details for topic ${topicId} go here.`; };
+const displayPharmacologyData = () => { document.getElementById('content-area').innerHTML = "Pharmacology content goes here."; };
+const fetchAndDisplayNews = () => { document.getElementById('content-area').innerHTML = "News content goes here."; };
+const fetchAndDisplayEvents = () => { document.getElementById('content-area').innerHTML = "Events content goes here."; };
+const displayFAQData = () => { document.getElementById('content-area').innerHTML = "FAQ content goes here."; };
+const fetchAndDisplayUsers = () => { document.getElementById('content-area').innerHTML = "User management content goes here."; };
+const fetchAndDisplaySearchResults = (query) => { document.getElementById('content-area').innerHTML = `Search results for "${query}" go here.`; };
+
+
+// Event Listeners for router and other functionalities
+window.addEventListener('hashchange', router);
+window.addEventListener('DOMContentLoaded', () => {
+    router();
+
+    // Chatbot functionality
+    const chatOpenButton = document.getElementById('chat-open-button');
+    const chatCloseButton = document.getElementById('chat-close-button');
+    const chatWindow = document.getElementById('chat-window');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    if (chatOpenButton) {
+        chatOpenButton.addEventListener('click', () => chatWindow.classList.remove('hidden'));
+    }
+    if (chatCloseButton) {
+        chatCloseButton.addEventListener('click', () => chatWindow.classList.add('hidden'));
+    }
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Display user message
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.textContent = message;
+            userMessageDiv.classList.add('p-2', 'rounded-lg', 'bg-blue-100', 'self-end', 'text-right', 'mb-2', 'max-w-xs', 'break-words');
+            chatMessages.appendChild(userMessageDiv);
+
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Get AI response
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.textContent = '...';
+            thinkingDiv.classList.add('p-2', 'rounded-lg', 'bg-gray-200', 'self-start', 'mb-2');
+            chatMessages.appendChild(thinkingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const aiResponse = await getAIChatResponse(message);
+                thinkingDiv.textContent = aiResponse;
+            } catch (error) {
+                thinkingDiv.textContent = 'Error getting response.';
+                console.error(error);
+            }
+        });
+    }
+
+    // Event delegation for login and register forms
+    document.body.addEventListener('submit', async (e) => {
+        if (e.target.id === 'login-form') {
+            e.preventDefault();
+            const username = e.target.querySelector('#username').value;
+            const password = e.target.querySelector('#password').value;
+            try {
+                await loginUser(username, password);
+                router(); // Re-route to dashboard after login
+            } catch (error) {
+                alert(error.message);
+            }
+        } else if (e.target.id === 'register-form') {
+            e.preventDefault();
+            const username = e.target.querySelector('#username').value;
+            const email = e.target.querySelector('#email').value;
+            const password = e.target.querySelector('#password').value;
+            try {
+                await registerUser(username, email, password);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    });
+});
