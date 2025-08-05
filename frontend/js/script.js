@@ -101,6 +101,7 @@ const renderHeader = () => `
             <a href="#/" class="text-gray-600 dark:text-gray-300 hover:text-blue-600">Home</a>
             <a href="#/courses" class="text-gray-600 dark:text-gray-300 hover:text-blue-600">Courses</a>
             <a href="#/about" class="text-gray-600 dark:text-gray-300 hover:text-blue-600">About</a>
+            <a href="#/contact" class="text-gray-600 dark:text-gray-300 hover:text-blue-600">Contact</a>
             <a href="#/login" id="login-logout-link" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 border-l-2 ml-2 pl-4">Login</a>
         </nav>
     </header>`;
@@ -111,6 +112,28 @@ const renderRegisterPage = () => `<div class="flex items-center justify-center h
 const renderDashboardPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Welcome!</h2><div id="dashboard-content"><p>Here is your dashboard.</p></div></div>`;
 const renderCoursesPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">Courses</h2><div id="content-area"><p>Here are the available courses.</p></div></div>`;
 const renderAboutPage = () => `<div class="p-8"><h2 class="text-3xl font-bold mb-6">About Us</h2><p>This is the TAMSA Digital Library.</p></div>`;
+
+const renderContactPage = () => `
+    <div class="p-8">
+        <h2 class="text-3xl font-bold mb-6">Contact Us</h2>
+        <form>
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700">Name</label>
+                <input type="text" id="name" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700">Email</label>
+                <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div class="mb-4">
+                <label for="message" class="block text-gray-700">Message</label>
+                <textarea id="message" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Submit</button>
+        </form>
+    </div>
+`;
+
 const render404Page = () => `<h2 class="text-3xl p-6 text-center text-red-500">404 - Page Not Found</h2>`;
 
 // =================================================================================
@@ -122,6 +145,7 @@ const routes = [
     { path: /^\/register$/, view: renderRegisterPage },
     { path: /^\/courses$/, view: renderCoursesPage },
     { path: /^\/about$/, view: renderAboutPage },
+    { path: /^\/contact$/, view: renderContactPage },
 ];
 
 const router = () => {
