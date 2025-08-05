@@ -63,6 +63,21 @@ const markTopicAsCompleteAPI = async (topicId) => {
     return await fetchWithAuth(`${API_URL}/api/topics/${topicId}/complete`, { method: 'POST' });
 };
 
+const logoutUser = () => {
+    try {
+        localStorage.removeItem('jwt_token');
+    } catch (e) {
+        console.error("Could not access localStorage. Private browsing mode may be enabled.", e);
+    }
+    window.location.hash = '/login';
+};
+
+const fetchUserProgress = async () => {
+    // This is a dummy function. In a real application, you would fetch user progress.
+    console.log("Fetching user progress (dummy).");
+    return Promise.resolve();
+};
+
 // =================================================================================
 // 3. UI COMPONENTS / RENDER FUNCTIONS
 // =================================================================================
@@ -131,12 +146,21 @@ const routes = [
 ];
 
 const router = () => {
-    const token = localStorage.getItem('jwt_token');
+    let token = null;
+    try {
+        token = localStorage.getItem('jwt_token');
+    } catch (e) {
+        console.error("Could not access localStorage. Private browsing mode may be enabled.", e);
+    }
+
     const path = window.location.hash.substring(1) || '/';
     const publicPages = ['/login', '/register'];
 
+    // If no token and not a public page, redirect to login
     if (!token && !publicPages.includes(path)) {
         window.location.hash = '/login';
+        // We need to call router again after redirecting
+        // but hashchange listener will do that for us.
         return;
     }
 
